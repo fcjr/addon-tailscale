@@ -8,6 +8,7 @@ declare -a addresses=()
 declare -a routes=()
 declare ipinfo
 declare tags
+declare flags
 
 function appendarray() {
   local -n array=${1}
@@ -47,6 +48,9 @@ readarray -t routes < <(printf "%s\n" "${routes[@]}" | sort -u)
 # Get configured tags
 tags=$(bashio::config "tags//[] | join(\",\")" "")
 
+# Get additional flags
+flags=$(bashio::config "flags//[] | join(\" \")" "")
+
 # Wait for socket to be available
 while ! bashio::fs.socket_exists "/var/run/tailscale/tailscaled.sock";
 do
@@ -65,7 +69,7 @@ do
       --advertise-exit-node \
       --accept-routes \
       --advertise-routes="${routes[*]}" \
-      --advertise-tags="${tags}"
+      --advertise-tags="${tags}" ${flags}
 
     bashio::exit.ok
   fi
